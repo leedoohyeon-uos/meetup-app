@@ -21,12 +21,13 @@ import {
 
 // TODO: 아래 값을 본인의 Firebase 프로젝트 설정으로 교체하세요.
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyDc1cdX9I3WDySOWXMivL-sMR9aOXqFing",
+  authDomain: "meetup-app-8703e.firebaseapp.com",
+  projectId: "meetup-app-8703e",
+  storageBucket: "meetup-app-8703e.firebasestorage.app",
+  messagingSenderId: "647386609005",
+  appId: "1:647386609005:web:7ea6f11e962b71f8e19664",
+  measurementId: "G-YRLWYKCH8S"
 };
 
 const app = initializeApp(firebaseConfig);
