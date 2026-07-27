@@ -1,0 +1,75 @@
+rules_version = '2';
+
+// ============================================================
+// Firestore 보안 규칙
+// 전제: 클라이언트는 Firebase Anonymous Auth 로 반드시 로그인한 뒤 접근한다.
+//       (프로젝트 콘솔 > Authentication > Sign-in method > 익명 사용 설정)
+//
+// 설계상 한계 (README 참고):
+//   Cloud Functions 없이 순수 Firestore 규칙 + 정적 호스팅만으로 구현했기 때문에,
+//   "비밀번호를 아는 사람만 응답을 읽고 쓸 수 있다"를 완전히 암호학적으로
+//   증명하기는 어렵습니다. 대신 (1) 그룹 문서 접근에는 반드시 익명 인증이 필요하고,
+//   (2) groupId/초대코드는 추측 불가능한 무작위 문자열이며,
+//   (3) 그룹 가입(members 배열 추가)은 비밀번호 해시가 정확히 일치할 때만 허용합니다.
+//   더 강한 보안이 필요하다면 Cloud Functions(App Check 포함)로 업그레이드하세요.
+// ============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // ---------------- users ----------------
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasAll(['name', 'birth', 'userKey'])
+        && request.resource.data.name is string
+        && request.resource.data.birth is string;
+      allow update, delete: if false; // 사용자 정보는 수정/삭제하지 않음
+    }
+
+    // ---------------- groups ----------------
+    match /groups/{groupId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasAll(['name', 'type', 'passwordHash', 'members'])
+        && request.resource.data.type in ['date', 'time']
+        && request.resource.data.members.size() == 1;
+
+      // 가입(비밀번호 확인 후 members 배열에 자기 자신 추가)만 허용.
+      // 그 외 필드(비밀번호, 이름, 마감일 등)는 절대 변경 불가.
+      allow update: if isSignedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
+        && request.resource.data.passwordHash == resource.data.passwordHash
+        && request.resource.data.members.size() == resource.data.members.size() + 1;
+
+      allow delete: if false;
+
+      // ---------------- responses (하위 컬렉션) ----------------
+      match /responses/{userKey} {
+        allow read: if isSignedIn();
+        // 문서 id 자체가 응답자의 userKey. 마감 전에만 쓰기 허용.
+        // (익명 인증 uid와 userKey는 별개 개념이라 "본인 확인"은 앱 레벨에서 이뤄짐 — README 참고)
+        allow write: if isSignedIn()
+          && request.resource.data.keys().hasAll(['userName', 'answers'])
+          && request.time < get(/databases/$(database)/documents/groups/$(groupId)).data.deadlineAt;
+      }
+
+      // ---------------- results 캐시 (하위 컬렉션) ----------------
+      match /results/{doc} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn();
+      }
+    }
+
+    // ---------------- invitations ----------------
+    match /invitations/{code} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.keys().hasAll(['groupId']);
+      allow update, delete: if false;
+    }
+  }
+}

@@ -1,0 +1,511 @@
+/* ============================================================
+   디자인 토큰
+   컨셉: "약속 도장" — 종이 다이어리에 도장을 찍어 약속을 확정한다는
+   한국적 은유. 청자빛 종이 배경 + 먹빛 잉크 + 인주(印朱) 빨강 포인트.
+============================================================ */
+:root {
+  --paper: #eef1ea;         /* 청자빛 종이 배경 */
+  --paper-raised: #f8f9f5;  /* 카드 표면 */
+  --ink: #202a24;           /* 본문 잉크색 */
+  --ink-soft: #5b6b5f;      /* 보조 텍스트 */
+  --line: rgba(32, 42, 36, 0.14);
+  --line-strong: rgba(32, 42, 36, 0.28);
+  --stamp: #b8352a;         /* 인주 빨강 (포인트) */
+  --stamp-dark: #8f271e;
+  --focus: #2f6f8f;
+
+  /* 결과 화면 그라데이션 (요구사항 고정 스펙) */
+  --pct-100: #1b7a3d;
+  --pct-75: #7fc97f;
+  --pct-50: #f4c430;
+  --pct-25: #f2994a;
+
+  --status-x: #c8ccc4;
+  --status-o: #4f8f63;
+  --status-tri: #d8a233;
+
+  --font-display: "Noto Serif KR", serif;
+  --font-body: "Pretendard", -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --radius: 10px;
+  --shadow-card: 0 1px 2px rgba(32,42,36,0.06), 0 6px 20px rgba(32,42,36,0.07);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* 은은한 도트 그리드 — 다이어리 종이 질감 */
+.grid-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(var(--line-strong) 1px, transparent 1px);
+  background-size: 22px 22px;
+  opacity: 0.5;
+}
+
+a { color: var(--focus); }
+button, input, select { font-family: inherit; }
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ---------------- 헤더 / 푸터 ---------------- */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.stamp-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2.5px solid var(--stamp);
+  color: var(--stamp);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -1px;
+  transform: rotate(-6deg);
+  user-select: none;
+}
+
+.brand-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.3px;
+}
+
+.app-footer {
+  padding: 14px 22px;
+  text-align: right;
+  font-size: 13px;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+}
+
+/* ---------------- 버튼 ---------------- */
+.btn-ghost, .btn-primary, .btn-secondary, .btn-danger {
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: transform 0.08s ease, background 0.15s ease;
+}
+.btn-ghost:active, .btn-primary:active, .btn-secondary:active { transform: scale(0.97); }
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+.btn-ghost:hover { background: var(--paper-raised); }
+
+.btn-primary {
+  background: var(--stamp);
+  color: #fff9f2;
+}
+.btn-primary:hover { background: var(--stamp-dark); }
+.btn-primary:disabled { background: #c9a49f; cursor: not-allowed; }
+
+.btn-secondary {
+  background: var(--paper-raised);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+.btn-secondary:hover { border-color: var(--stamp); color: var(--stamp); }
+
+.btn-danger {
+  background: transparent;
+  border-color: var(--stamp);
+  color: var(--stamp);
+}
+
+/* ---------------- 레이아웃 / 카드 ---------------- */
+.view-root {
+  flex: 1;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+.card {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 28px 26px;
+}
+
+.card + .card { margin-top: 18px; }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  color: var(--stamp);
+  text-transform: uppercase;
+  margin: 0 0 6px;
+}
+
+h1.view-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  margin: 0 0 4px;
+}
+
+.view-sub {
+  color: var(--ink-soft);
+  margin: 0 0 22px;
+  font-size: 14.5px;
+}
+
+/* ---------------- 폼 ---------------- */
+.field {
+  margin-bottom: 16px;
+}
+.field label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--ink);
+}
+.field input[type="text"],
+.field input[type="password"],
+.field select {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 15px;
+  color: var(--ink);
+}
+.field input:focus, .field select:focus {
+  border-color: var(--focus);
+}
+.field-hint {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin-top: 5px;
+}
+.field-error {
+  font-size: 13px;
+  color: var(--stamp);
+  margin-top: 6px;
+}
+
+.radio-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.radio-card {
+  flex: 1 1 140px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  background: #fff;
+}
+.radio-card.active {
+  border-color: var(--stamp);
+  background: #fdf1ee;
+}
+.radio-card strong { display: block; font-size: 14.5px; }
+.radio-card span { font-size: 12.5px; color: var(--ink-soft); }
+
+.chip-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chip {
+  border: 1.5px solid var(--line-strong);
+  background: #fff;
+  border-radius: 999px;
+  padding: 7px 15px;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.chip.active { border-color: var(--stamp); color: var(--stamp); background: #fdf1ee; }
+
+.actions-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+  justify-content: flex-end;
+}
+
+/* ---------------- 그룹 목록 ---------------- */
+.group-list { list-style: none; padding: 0; margin: 0 0 18px; }
+.group-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: #fff;
+}
+.group-list .g-type {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+
+.divider-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  margin: 22px 0;
+}
+.divider-label::before, .divider-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+/* ---------------- 캘린더 (날짜형) ---------------- */
+.calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.calendar-head .month-label {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  user-select: none;
+}
+.calendar-grid .dow {
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  padding-bottom: 4px;
+  font-family: var(--font-mono);
+}
+.day-cell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  font-size: 13.5px;
+  position: relative;
+}
+.day-cell.empty { visibility: hidden; cursor: default; }
+.day-cell .mark {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 2px;
+}
+.day-cell.status-X { background: #f4f5f1; color: var(--ink-soft); }
+.day-cell.status-O { background: #e6f3ea; border-color: var(--status-o); color: var(--status-o); }
+.day-cell.status-△ { background: #fbf1de; border-color: var(--status-tri); color: var(--status-tri); }
+.day-cell.past { opacity: 0.35; pointer-events: none; }
+
+/* ---------------- 시간 슬롯 (시간형) ---------------- */
+.time-day-block { margin-bottom: 20px; }
+.time-day-block .day-title {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 13.5px;
+  margin-bottom: 8px;
+  color: var(--ink);
+}
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+  gap: 5px;
+  user-select: none;
+}
+.slot-cell {
+  padding: 7px 4px;
+  text-align: center;
+  border-radius: 6px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  cursor: pointer;
+}
+.slot-cell.status-X { background: #f4f5f1; color: var(--ink-soft); }
+.slot-cell.status-O { background: #e6f3ea; border-color: var(--status-o); color: var(--status-o); }
+.slot-cell.status-△ { background: #fbf1de; border-color: var(--status-tri); color: var(--status-tri); }
+
+.legend-row {
+  display: flex;
+  gap: 16px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin: 14px 0 4px;
+  flex-wrap: wrap;
+}
+.legend-row .dot { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align: -1px;}
+
+/* ---------------- 결과 화면 ---------------- */
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  color: #fff;
+}
+.result-row .r-label {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  min-width: 140px;
+}
+.result-row .r-pct {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+}
+.result-row .r-names {
+  font-size: 12.5px;
+  opacity: 0.92;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ink-soft);
+}
+
+.deadline-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fdf1ee;
+  border: 1px solid #eecbc4;
+  color: var(--stamp-dark);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  margin-bottom: 18px;
+}
+
+/* ---------------- 초대 링크 박스 ---------------- */
+.invite-box {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: #fff;
+  border: 1.5px dashed var(--line-strong);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+/* ---------------- 모달 ---------------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(32, 42, 36, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 50;
+}
+.modal-overlay.hidden { display: none; }
+.modal-card {
+  background: var(--paper-raised);
+  border-radius: var(--radius);
+  max-width: 520px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 30px 26px;
+  position: relative;
+  box-shadow: var(--shadow-card);
+}
+.modal-close {
+  position: absolute;
+  top: 14px; right: 16px;
+  background: none; border: none;
+  font-size: 22px; cursor: pointer;
+  color: var(--ink-soft);
+}
+.modal-card h2 {
+  font-family: var(--font-display);
+  margin-top: 0;
+}
+.help-list { padding-left: 20px; }
+.help-list li { margin-bottom: 14px; font-size: 14.5px; }
+
+/* ---------------- 반응형 (모바일) ---------------- */
+@media (max-width: 560px) {
+  .view-root { padding: 20px 14px 50px; }
+  .card { padding: 20px 16px; }
+  h1.view-title { font-size: 22px; }
+  .slot-grid { grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); }
+  .day-cell { font-size: 12px; }
+  .actions-row { flex-direction: column-reverse; }
+  .actions-row button { width: 100%; }
+  .app-header { padding: 12px 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
